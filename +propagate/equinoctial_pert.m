@@ -3,7 +3,7 @@ function dxdt = equinoctial_pert(t, x, param)
 % perturbations
 
 dxdt = zeros(6, 1);
-mu = param.mu_earth;
+mu = param.mu_grav;
 
 % Store states to meaningful variables
 p = x(1); % Semi-major axis (km)
@@ -55,5 +55,14 @@ if isfield(param, 'use_Drag') && param.use_Drag
     w_earth = param.w_earth;
     [a_Drag, ~] = propagate.Drag_pert(r_vec, v_vec, rho_ref, dens_scale, h0, CD, A_m, w_earth); % Drag perturbation accelerations (km/s^2)
     dxdt = dxdt + B*(a_Drag);
+end
+
+if isfield(param, 'use_3body') && param.use_3body
+    % Extract needed parameters
+    GM_star = param.GM_star;
+    l_star = param.l_star;
+    mu_grav = param.mu_grav;
+    [a_moon, ~] = propagate.moon_pert(t, r_vec, v_vec, GM_star, l_star, mu_grav); % Moon perturbation accelerations (km/s^2)
+    dxdt(4:6) = dxdt(4:6) + a_moon;
 end
 end
